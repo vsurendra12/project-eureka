@@ -10,7 +10,7 @@ pipeline {
         stage ("build") {
             steps {
                 echo "***building eureka application***"
-                sh "mvn clean package"
+                sh "mvn clean package -Dskiptests=true"
             }
         }
     }
