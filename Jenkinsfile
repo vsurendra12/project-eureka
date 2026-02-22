@@ -25,12 +25,26 @@ pipeline {
         stage ("sonar") {
             steps {
                 echo "*****starting sonar scan*******"
-                sh """
-                   mvn clean verify sonar:sonar \
-                     -Dsonar.projectKey=Eureka-Application \
-                     -Dsonar.host.url=${env.SONAR_URL} \
-                     -Dsonar.login=${env.SONAR_TOKEN} 
-                """
+
+                withSonarQubeEnv ("SonarQube") {
+
+                    sh """
+                       mvn clean verify sonar:sonar \
+                        -Dsonar.projectKey=Eureka-Application \
+                        -Dsonar.host.url=${env.SONAR_URL} \
+                        -Dsonar.login=${env.SONAR_TOKEN} 
+                    """
+
+                }
+                
+                timeout (time: 2, unit: "MINUTES"){
+
+                    script {
+                        waitForQualityGate abortPipeline: true
+                    }
+
+                }
+                
             }
         }
     }
