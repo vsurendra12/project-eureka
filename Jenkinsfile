@@ -24,7 +24,7 @@ pipeline {
         }
         stage ("sonar") {
             steps {
-                echo "*****starting sonar scan******"
+                echo "*****starting sonar scan*******"
                 sh """
                    mvn clean verify sonar:sonar \
                      -Dsonar.projectKey=Eureka-Application \
