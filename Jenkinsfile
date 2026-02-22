@@ -48,7 +48,7 @@ pipeline {
             steps {
                 //existing i27-eureka-0.0.1-SNAPSHOT.jar
                 //existing i27-eureka-buildnumber-branchname.jar
-                echo "testing jar source:i27-${env.APPLICATION_NAME}-${env.POM_VERSION}-.${env.POM_PACKAGING}"
+                echo "testing jar source:i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${env.POM_PACKAGING}"
                 echo "testing jar destination:i27-${env.APPLICATION_NAME}-${BUILD_NUMBER}-${BRANCH_NAME}.${env.POM_PACKAGING}"
 
 
