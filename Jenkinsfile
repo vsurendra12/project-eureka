@@ -57,7 +57,7 @@ pipeline {
         stage ("DockerBuildANDPush") {
             steps {
                 echo "*** Building the Docker Image *****"
-                sh "cp target/i27-${env.APPLICATION_NAME}-${env.POM_VERSION}-${POM_PACKAGING} ./.cicd"
+                sh "cp /home/jenkins/workspace/Eureka_application_main/target/i27-${env.APPLICATION_NAME}-${env.POM_VERSION}-${POM_PACKAGING} ./.cicd"
                 sh "docker build --build-arg JAR_SOURCE=i27-${env.APPLICATION_NAME}-${env.POM_VERSION}-${POM_PACKAGING}  -t eureka:v1 ./.cicd"
             }
         }
