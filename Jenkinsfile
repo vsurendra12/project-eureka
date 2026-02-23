@@ -24,7 +24,7 @@ pipeline {
                 sh "mvn clean package -Dskiptests=true"
             }
         }
-        stage ("sonar") {
+         stage ("sonar") {
             steps {
                 echo "*****starting sonar scan*******"
 

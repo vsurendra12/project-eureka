@@ -1,5 +1,4 @@
-# java based application
-FROM openjdk:18
+FROM eclipse-temurin:17-jre
 
 RUN mkdir -p /opt/i27
 
