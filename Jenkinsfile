@@ -16,6 +16,7 @@ pipeline {
         APPLICATION_NAME = "eureka"
         SONAR_URL = "http://34.51.5.154:9000"
         SONAR_TOKEN = credentials("sonar_creds")
+        DOCKER_HUB = "docker.io/surendra1520"
     } 
     stages {
         stage ("build") {
@@ -58,7 +59,7 @@ pipeline {
             steps {
                 echo "*** Building the Docker Image *****"
                 sh "cp target/i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${POM_PACKAGING} ./.cicd"
-                sh "docker build --no-cache --build-arg JAR_SOURCE=i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${POM_PACKAGING} -t eureka:v1 ./.cicd"
+                sh "docker build --no-cache --build-arg JAR_SOURCE=i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${POM_PACKAGING} -t ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:$GIT_COMMIT ./.cicd"
             }
         }
     }
