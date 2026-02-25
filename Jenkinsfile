@@ -3,13 +3,11 @@ pipeline {
         label "java-slave"
     }
 
-    //tools section
     tools {
         maven "maven:latest"
         jdk "JDK:latest"
     }
 
-    //environment
     environment {
         POM_VERSION = readMavenPom().getVersion()
         POM_PACKAGING = readMavenPom().getPackaging()
@@ -17,53 +15,75 @@ pipeline {
         SONAR_URL = "http://34.51.5.154:9000"
         SONAR_TOKEN = credentials("sonar_creds")
         DOCKER_HUB = "docker.io/surendra1520"
-        DOCKER_CREDS = credentials("Docker_creds")
-    } 
+    }
+
     stages {
-        stage ("build") {
+
+        stage ("Build") {
             steps {
-                echo "***building ${env.APPLICATION_NAME} application***"
-                sh "mvn clean package -Dskiptests=true"
+                echo "*** Building ${env.APPLICATION_NAME} application ***"
+                sh "mvn clean package -DskipTests=true"
             }
         }
-         stage ("sonar") {
+
+        stage ("Sonar") {
             steps {
-                echo "*****starting sonar scan*******"
+                echo "***** Starting Sonar Scan *****"
 
-                withSonarQubeEnv ("SonarQube") {
-
+                withSonarQubeEnv("SonarQube") {
                     sh """
-                       mvn clean verify sonar:sonar \
+                        mvn clean verify sonar:sonar \
                         -Dsonar.projectKey=Eureka-Application \
                         -Dsonar.host.url=${env.SONAR_URL} \
-                        -Dsonar.login=${env.SONAR_TOKEN} 
+                        -Dsonar.login=${env.SONAR_TOKEN}
                     """
                 }
-                timeout (time: 2, unit: "MINUTES"){
+
+                timeout(time: 2, unit: "MINUTES") {
                     script {
                         waitForQualityGate abortPipeline: true
                     }
-                }    
+                }
             }
         }
+
         stage ("Formatting") {
             steps {
-                //existing i27-eureka-0.0.1-SNAPSHOT.jar
-                //existing i27-eureka-buildnumber-branchname.jar
-                echo "testing jar source:i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${env.POM_PACKAGING}"
-                echo "testing jar destination:i27-${env.APPLICATION_NAME}-${BUILD_NUMBER}-${BRANCH_NAME}.${env.POM_PACKAGING}"
-
-
+                echo "Jar source: i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${env.POM_PACKAGING}"
+                echo "Jar destination: i27-${env.APPLICATION_NAME}-${env.BUILD_NUMBER}.${env.POM_PACKAGING}"
             }
         }
-        stage ("DockerBuildANDPush") {
+
+        stage ("DockerBuildAndPush") {
             steps {
                 echo "*** Building the Docker Image *****"
-                sh "cp target/i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${POM_PACKAGING} ./.cicd"
-                sh "docker build --no-cache --build-arg JAR_SOURCE=i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${POM_PACKAGING} -t ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:$GIT_COMMIT ./.cicd"
-                echo "****docker login*****"
-                sh "docker login -u ${DOCKER_CREDS_USR} -p ${DOCKER_CREDS_PSW}"
-                sh "docker push ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:$GIT_COMMIT "
+
+                // Copy jar into .cicd folder
+                sh """
+                    cp target/i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${env.POM_PACKAGING} ./.cicd/
+                    ls -l ./.cicd
+                """
+
+                // Build Docker image
+                sh """
+                    docker build --no-cache \
+                    --build-arg JAR_SOURCE=i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${env.POM_PACKAGING} \
+                    -t ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${env.BUILD_NUMBER} ./.cicd
+                """
+
+                echo "**** Docker Login *****"
+
+                // Secure Docker Login & Push
+                withCredentials([usernamePassword(
+                    credentialsId: 'Docker_creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                        echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
+                        docker push ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${env.BUILD_NUMBER}
+                    """
+                }
             }
         }
     }
