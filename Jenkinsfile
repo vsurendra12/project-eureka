@@ -62,7 +62,7 @@ pipeline {
                 sh "cp target/i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${POM_PACKAGING} ./.cicd"
                 sh "docker build --no-cache --build-arg JAR_SOURCE=i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${POM_PACKAGING} -t ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:$GIT_COMMIT ./.cicd"
                 echo "****docker login*****"
-                sh "docker login -u ${DOCKER_CREDS_USR} -p ${DOCKER_CREDS+PSW}"
+                sh "docker login -u ${DOCKER_CREDS_USR} -p ${DOCKER_CREDS_PSW}"
                 sh "docker push ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:$GIT_COMMIT "
             }
         }
