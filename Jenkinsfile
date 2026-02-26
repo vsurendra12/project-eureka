@@ -92,7 +92,7 @@ pipeline {
                 echo "Deploying to dev env"
                 withCredentials([usernamePassword(credentialsId: 'Docker_vm_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                 // some block
-                sh "sshpass -P $PASSWORD -v ssh -o StrictHostKeyChecking=no $USERNAME@$DOCKER_VM_IP \"whoami\""
+                sh "sshpass -p $PASSWORD -v ssh -o StrictHostKeyChecking=no $USERNAME@$DOCKER_VM_IP \"whoami\""
                }
             }
         }
